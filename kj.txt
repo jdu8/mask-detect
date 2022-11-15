@@ -1,0 +1,291 @@
+# DOCKER
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg lsb-release
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg.
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo service docker start
+sudo docker run hello-world
+
+# Making docker image
+# Dockerfile contents
+
+FROM (parent image usually ubuntu can be scratch if needed) ubuntu:latest
+
+RUN apt update
+RUN apt install python3 -y
+
+WORKDIR /usr/app/src
+
+COPY print.py ./
+
+CMD ["python3", "./print.py"]
+
+# Building docker image
+# in same directory with dockerfile do
+sudo docker build -t <name> .
+
+# run image
+sudo docker run <name>
+
+# pull image 
+sudo docker pull <username>/<img_name>
+
+# push image
+sudo usermod -aG docker ${USER}
+# restart connection then
+docker push <img_name>
+------------------------------------------------------------------------------------------
+# CISCO
+# do the basic i.e give IP and gateway
+# on switch
+enable
+config terminal
+vlan <no>
+name <name>
+
+# do for all ports
+int fa0/<dep_on_conn> 1,2,3,..
+switchport mode access
+switchport access vlan <number which we want to give to port>
+
+int fa0/<router_port>
+switchport mode trunk
+
+# on router
+en
+conf t
+int fa0/0
+no shutdown
+# do same for all vlan
+int fa0/0.<vlan_no>
+encapsulation dot1q <vlan_no>
+ip add <gateway for vlan> <mask>
+------------------------------------------------------------------------------------------
+# Web Hosting
+# Enable http and https traffic for instance
+sudo su
+sudo apt install apache2
+sudo service apache2 start
+# navigate to /var/www/html and put files there
+# in browser do
+http://<public_ip>/filename.html
+------------------------------------------------------------------------------------------
+# X11 Forwarding
+#Open /etc/ssh/ssh_config and enable x11 forwarding 
+# do line 23,24 to yes
+# ssh to instance
+sudo apt update
+sudo apt install x11-apps
+# then we can run xcalc,xclock etc
+# Using putty
+Open XLaunch and choose mul windows and display number=0
+stat no client
+check clipboard
+finish
+in putty go to connection the ssh then tty and enable
+log in to server
+From the Start menu, choose All Programs, PuTTY, PuTTYgen.
+Under Type of key to generate, choose RSA. If your version of PuTTYgen does not include this option, choose SSH-2 RSA.
+Choose Load. By default, PuTTYgen displays only files with the extension .ppk. To locate your .pem file, choose the option to display files of all types.
+Select your .pem file for the key pair that you specified when you launched your instance and choose Open. PuTTYgen displays a notice that the .pem file was successfully imported. Choose OK.
+To save the key in the format that PuTTY can use, choose Save private key. PuTTYgen displays a warning about saving the key without a passphrase. Choose Yes.
+Specify the same name for the key that you used for the key pair (for example, key-pair-name) and choose Save. PuTTY automatically adds the .ppk file extension. 
+Start PuTTY (from the Start menu, choose All Programs, PuTTY, PuTTY).
+In the Category pane, choose Session and complete the following fields:
+    In the Host Name box, do one of the following:
+        (Public DNS) To connect using your instance's public DNS name, enter instance-user-name@instance-public-dns-name.
+        (IPv6) Alternatively, if your instance has an IPv6 address, to connect using your instance's IPv6 address, enter instance-user-name@instance-IPv6-address.
+    For information about how to get the user name for your instance, and the public DNS name or IPv6 address of your instance, see Get information about your instance.
+    Ensure that the Port value is 22.
+    Under Connection type, select SSH.
+In the Category pane, expand Connection, expand SSH, and then choose Auth. Complete the following:
+    Choose Browse.
+    Select the .ppk file that you generated for your key pair and choose Open.
+    (Optional) If you plan to start this session again later, you can save the session information for future use. Under Category, choose Session, enter a name for the session in Saved Sessions, and then choose Save.
+    Choose Open.
+If this is the first time you have connected to this instance, PuTTY displays a security alert dialog box that asks whether you trust the host to which you are connecting.
+    (Optional) Verify that the fingerprint in the security alert dialog box matches the fingerprint that you previously obtained in (Optional) Get the instance fingerprint. If these fingerprints don't match, someone might be attempting a "man-in-the-middle" attack. If they match, continue to the next step.
+    Choose Yes. A window opens and you are connected to your instance.
+------------------------------------------------------------------------------------------
+# nested vm
+# go to virtualbox folder and run
+VBoxManage modifyvm VMNAME --nested-hw-virt on
+# see if tick mark on Enable Nested VT-x/AMD-v on virtual box	
+#Check virtualisation is enabled: 
+egrep -c '(vmx|svm)'/proc/cpuinfo
+# Check if kvm can be used download cpu checker
+kvm-ok
+sudo apt install -y qemu-kvm virt-manager libvirt-daemon-system virtinst libvirt-clients bridge-utils
+sudo systemctl enable --now libvirtd
+sudo systemctl start libvirtd
+sudo systemctl status libvirtd
+sudo usermod -aG kvm $USER
+sudo usermod -aG libvirt $USER
+# Open GUI for making vm search for virtual machine manager or run
+sudo virt-manager
+-----------------------------------------------------------------------------------------
+# Hadoop Installation
+sudo apt update
+sudo apt install openjdk-11-jdk
+java -version
+sudo adduser username
+su - username
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+chmod 640 ~/.ssh/authorized_keys
+ssh localhost
+wget https://downloads.apache.org/hadoop/common/hadoop-3.3.4/hadoop-3.3.4.tar.gz
+tar -xvzf hadoop-3.3.4.tar.gz
+mv hadoop-3.3.4 hadoop
+dirname $(dirname $(readlink -f $(which java)))
+# Add the following paths in the opened “~/.bashrc” le:
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export HADOOP_HOME=/home/username/hadoop
+export HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export HADOOP_YARN_HOME=$HADOOP_HOME
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib/native"
+source ~/.bashrc
+# open up the environment variable file of Hadoop 
+nano $HADOOP_HOME/etc/hadoop/hadoop-env.sh
+# set “JAVA_HOME” variable in the Hadoop environment 
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+# Create two directories: datanode and namenode, inside the home directory of Hadoop
+mkdir -p ~/hadoopdata/hdfs/namenode, 
+mkdir -p ~/hadoopdata/hdfs/datanode
+# Update the Hadoop “core-site.xml” le by adding our hostname
+nano $HADOOP_HOME/etc/hadoop/core-site.xml
+<property>
+<name>fs.defaultFS</name>
+<value>hdfs://hadoop.linuxhint-VBox.com:9000</value>
+</property>
+nano $HADOOP_HOME/etc/hadoop/hdfs-site.xml
+<con guration>
+<property>
+<name>dfs.replication</name>
+<value>1</value>
+</property>
+<property>
+<name>dfs.name.dir</name>
+<value> le:///home/hadoopuser/hadoopdata/hdfs/namenode</value>
+</property>
+<property>
+<name>dfs.data.dir</name>
+<value> le:///home/hadoopuser/hadoopdata/hdfs/datanode</value>
+</property>
+</con guration>
+nano $HADOOP_HOME/etc/hadoop/mapred-site.xml
+<con guration>
+<property>
+<name>mapreduce.framework.name</name>
+<value>yarn</value>
+</property>
+</con guration>
+nano $HADOOP_HOME/etc/hadoop/yarn-site.xml
+<con guration>
+<property>
+<name>yarn.nodemanager.aux-services</name>
+<value>mapreduce_shuf e</value>
+</property>
+</con guration>
+hdfs namenode -format
+start-dfs.sh
+start-yarn.sh
+jps # To check
+
+# Hadoop Commands
+hdfs dfs -ls <dir _ name or whatever idk>
+# Copy from local
+hdfs dfs -copyFromLocal file_path name_u_want_in_hdp
+
+# Mapreduce procedure
+su - username
+start-dfs.sh
+start-yarn.sh
+# Create a directory input on HDFS.
+# Create a text le and save it in the input directory.
+# Navigate to Hadoop -> share -> Hadoop -> mapreduce directory
+cd hadoop/share/hadoop/mapreduce
+hadoop jar hadoop-mapreduce-examples-3.3.4.jar home/hdtest/hadoop/bin/input home/hdtest/bin/output
+hadoop jar hadoop-mapreduce-examples-3.3.4.jar wordcount /home/hdtest/hadoop/bin/input /home/hdtest/bin/output
+hadoop fs -cat /home/hdtest/hadoop/bin/output1/part-r-00000
+
+# Matrix mul in hadoop
+# Create two files M1, M2 and put the matrix values. (sperate columns with spaces and rows with a line break)
+# Put the above files to HDFS at location /user/clouders/matrices/
+hdfs dfs -mkdir /user/cloudera/matrice
+hdfs dfs -put /path/to/M1 /user/cloudera/matrices/
+hdfs dfs -put /path/to/M2 /user/cloudera/matrices/
+# Mapper.py Define dimensions of mat
+# Let # be in next line
+#!/usr/lib/python
+import sys
+m_r=2
+m_c=3
+n_r=3
+n_c=2
+i=0
+# Read each line i.e a row from stdin and split then to separate elements. Map int to each element as we read elements as string from stdin.
+for line in sys.stdin:el=map(int,line.split())
+# The mapper will first read the first matrix and then the second. To differentiate them we can keep a count i of the line number we are reading and the first m_r lines will belong to the first matrix.
+if(i<m_r):
+     for j in range(len(el)):
+          for k in range(n_c): print "{0}\t{1}\t{2}\t{3}".format(i, k, j, el[j])
+ else:
+     for j in range(len(el)):
+          for k in range(m_r): print "{0}\t{1}\t{2}\t{3}".format(k, j, i-m_r, el[j])
+ i=i+1
+ # reducer.py
+ #!/usr/lib/python
+import sys
+m_r=2
+m_c=3
+n_r=3
+n_c=2matrix=[]
+for row in range(m_r):
+   r=[]
+   for col in range(n_c):
+      s=0
+      for el in range(m_c):
+         mul=1
+         for num in range(2):
+            line=sys.stdin.readline()
+            n=map(int,line.split('\t'))[-1]
+            mul*=n
+         s+=mul
+      r.append(s)
+    matrix.append(r)
+print('\n'.join([str(x) for x in matrix]))
+$ chmod +x ~/Desktop/mr/matrix-mul/Mapper.py$ chmod +x ~/Desktop/mr/matrix-mul/Reducer.py$ hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar \
+> -input /user/cloudera/matrices/ \
+> -output /user/cloudera/mat_output \
+> -mapper ~/Desktop/mr/matrix-mul/Mapper.py \
+> -reducer ~/Desktop/mr/matrix-mul/Reducer.py
+hdfs dfs -cat /user/cloudera/mat_output/*
+---------------------------------------------------------------------------
+cloudsim
+Download CloudSim source code
+common jar package of math-related functions is to be downloaded from the Apache website or you may directly download by clicking here.
+Unzip Eclipse, Cloudsim and Common Math libraries to some common folder.
+Now within Eclipse window navigate the menu: File -> New -> Project, to open the new project wizard
+A ‘New Project‘ wizard should open. There are a number of options displayed and you have to find & select the ‘Java Project‘ option, once done click ‘Next‘
+Now a detailed new project window will open, here you will provide the project name and the path of CloudSim project source code, which will be done as follows:
+
+    Project Name: CloudSim.
+    Unselect the ‘Use default location’ option and then click on ‘Browse’ to open the path where you have unzipped the Cloudsim project and finally click Next to set project settings.
+ Make sure you navigate the path till you can see the bin, docs, examples etc folder in the navigation plane.
+Once done finally, click ‘Next’ to go to the next step i.e. setting up of project settings
+Now open ‘Libraries’ tab and if you do not find commons-math3-3.x.jar (here ‘x’ means the minor version release of the library which could be 2 or greater) in the list then simply click on ‘Add External Jar’ (commons-math3-3.x.jar will be included in the project from this step) 
+Once you have clicked on ‘Add External JAR’s‘ Open the path where you have unzipped the commons-math binaries and select ‘Commons-math3-3.x.jar’ and click on open.
+Ensure external jar that you opened in the previous step is displayed in the list and then click on ‘Finish’ (your system may take 2-3 minutes to configure the project)
+Now just to check you within the ‘Project Explorer‘, you should navigate to the ‘examples‘ folder, then expand the package ‘org.cloudbus.cloudsim.examples‘ and double click to open the ‘CloudsimExample1.java‘.
+Now navigate to the Eclipse menu ‘Run -> Run‘ or directly use a keyboard shortcut ‘Ctrl + F11’ to execute the ‘CloudsimExample1.java‘.
+
+
